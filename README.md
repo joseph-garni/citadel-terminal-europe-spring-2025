@@ -9,7 +9,7 @@ For more details about competitions and the game itself please check out our
 # Onboarding Details
 Owner : correlation-one/foundational-services 
 
-Team : Foundational Services
+Team : alphadecay
 
 DeepSource Auto-Onboard : No
 
