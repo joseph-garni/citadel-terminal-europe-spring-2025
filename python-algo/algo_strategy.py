@@ -110,12 +110,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         # More community tools available at: https://terminal.c1games.com/rules#Download
 
         # Place turrets that attack enemy units
-        turret_locations = [[0, 13], [27, 13], [8, 11], [19, 11], [13, 11], [14, 11]]
+        turret_locations = [[23, 12], [21, 10], [6, 10], [4, 11], [16, 12], [17, 10], [18, 12], [14, 11]]
         # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
         game_state.attempt_spawn(TURRET, turret_locations)
         
         # Place walls in front of turrets to soak up damage for them
-        wall_locations = [[8, 12], [19, 12]]
+        wall_locations = [[0, 13], [1, 13], [2, 13], [3, 13], [4, 13],[5, 13], [6, 13], [7, 13], [8, 13], [9, 13], [10, 13], [11, 13], [12, 13], [13, 13], [14, 13] [23, 13], [24, 13], [25, 13], [26, 13], [27, 13], [19, 12], [19, 11], [19, 10], [19, 9]]
         game_state.attempt_spawn(WALL, wall_locations)
         # upgrade walls so they soak more damage
         game_state.attempt_upgrade(wall_locations)
@@ -153,6 +153,14 @@ class AlgoStrategy(gamelib.AlgoCore):
             We don't have to remove the location since multiple mobile 
             units can occupy the same space.
             """
+    def scounts_funnel_strategy(self, game_state):
+        """
+        Using the funnel strategy from our turrets and walls we have placed earlier, 
+        now spawn 5 - 10+ scounts (when points all it possible), to score on 
+        enemy side using funnel
+        """
+
+
 
     def demolisher_line_strategy(self, game_state):
         """
