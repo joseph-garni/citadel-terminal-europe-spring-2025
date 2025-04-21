@@ -153,7 +153,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             We don't have to remove the location since multiple mobile 
             units can occupy the same space.
             """
-    def scounts_funnel_strategy(self, game_state):
+    # def scounts_funnel_strategy(self, game_state):
         """
         Using the funnel strategy from our turrets and walls we have placed earlier, 
         now spawn 5 - 10+ scounts (when points all it possible), to score on 
