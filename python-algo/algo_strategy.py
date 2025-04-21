@@ -156,7 +156,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             We don't have to remove the location since multiple mobile 
             units can occupy the same space.
             """
-            
+
     def scouts_funnel_strategy(self, game_state):
         """
         Using the funnel strategy from our turrets and walls we have placed earlier, 
@@ -171,7 +171,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         max_scouts = min(int(available_mp / scout_cost), 10)
         
         # Only proceed if we can afford at least 5 scouts
-        if max_scouts < 5:
+        if max_scouts < 1:
             return False
         
         # Choose the best spawn location
