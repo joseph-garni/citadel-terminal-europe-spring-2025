@@ -53,7 +53,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         game engine.
         """
         game_state = gamelib.GameState(self.config, turn_state)
-        game_state.attempt_spawn(DEMOLISHER, [24, 10], 3)
+        game_state.attempt_spawn(DEMOLISHER, [24, 10], 3) 
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
@@ -94,9 +94,11 @@ class AlgoStrategy(gamelib.AlgoCore):
                 # Sending more at once is better since attacks can only hit a single scout at a time
                 if game_state.turn_number % 2 == 1:
                     # To simplify we will just check sending them from back left and right
-                    scout_spawn_location_options = [[13, 0], [14, 0]]
-                    best_location = self.least_damage_spawn_location(game_state, scout_spawn_location_options)
-                    game_state.attempt_spawn(SCOUT, best_location, 1000)
+                    #scout_spawn_location_options = [[13, 0], [14, 0]]
+                    #best_location = self.least_damage_spawn_location(game_state, scout_spawn_location_options)
+
+                    self.scouts_funnel_strategy(game_state)
+                    #game_state.attempt_spawn(SCOUT, best_location, 1000)
 
                 # Lastly, if we have spare SP, let's build some supports
                 support_locations = [[13, 2], [14, 2], [13, 3], [14, 3]]
@@ -129,7 +131,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         for location in self.scored_on_locations:
             # Build turret one space above so that it doesn't block our own edge spawn locations
-            build_location = [location[0], location[1]+1]
+            build_location = [location[0]+2, location[1]+2]
             game_state.attempt_spawn(TURRET, build_location)
 
     def stall_with_interceptors(self, game_state):
@@ -154,14 +156,32 @@ class AlgoStrategy(gamelib.AlgoCore):
             We don't have to remove the location since multiple mobile 
             units can occupy the same space.
             """
-    # def scouts_funnel_strategy(self, game_state):
+            
+    def scouts_funnel_strategy(self, game_state):
         """
         Using the funnel strategy from our turrets and walls we have placed earlier, 
         now spawn 5 - 10+ scounts (when points all it possible), to score on 
         enemy side using funnel
         """
-
-
+        # Check if we have enough MP to spawn at least 5 scouts
+        scout_cost = gamelib.GameUnit(SCOUT, game_state.config).cost[MP]
+        available_mp = game_state.get_resource(MP)
+        
+        # Calculate how many scouts we can afford, up to 10
+        max_scouts = min(int(available_mp / scout_cost), 10)
+        
+        # Only proceed if we can afford at least 5 scouts
+        if max_scouts < 5:
+            return False
+        
+        # Choose the best spawn location
+        scout_spawn_location_options = [[13, 0], [14, 0]]
+        best_location = self.least_damage_spawn_location(game_state, scout_spawn_location_options)
+        
+        # Spawn the scouts
+        scouts_spawned = game_state.attempt_spawn(SCOUT, best_location, max_scouts)
+        
+        return scouts_spawned > 0
 
     def demolisher_line_strategy(self, game_state):
         """
