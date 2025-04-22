@@ -103,8 +103,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         support_locations_2 = [[19, 12],[19, 11], [17, 6], [19, 10], [19, 9], [21, 13], [20, 13], [19, 13], [19, 8], [18, 8], [17, 8], [16, 8], [15, 8], [6, 13], [7, 13]]
         game_state.attempt_spawn(WALL, support_locations_2, 6)
         support_locations_3 = [[14, 3],[15, 4], [16, 5], [13, 3], [12, 4], [11, 5], [10, 6], [9, 7], [8, 8], [7, 9], [6, 10], [5, 11], [4, 13], [8, 13], [21, 10], [22, 11]]
-        game_state.attempt_spawn(WALL, support_locations_3, 6)
-        #self.scouts_funnel_strategy(game_state)
+        game_state.attempt_spawn(WALL, support_locations_3, 10)
+        self.scouts_funnel_strategy(game_state)
 
         # If the turn is less than 5, stall with interceptors and wait to see enemy's base
             # Now let's analyze the enemy base to see where their defenses are concentrated.
@@ -154,9 +154,15 @@ class AlgoStrategy(gamelib.AlgoCore):
             [25, 13],
             #[26, 13], [27, 13], 
             [24, 13]]
+        special_wall_locations = [[0, 13], [1, 13], 
+            [2, 13], [3, 13], [4, 13], 
+            [22, 13], [23, 13],
+            [25, 13],
+            #[26, 13], [27, 13], 
+            [24, 13]]
         game_state.attempt_spawn(WALL, wall_locations)
         # upgrade walls so they soak more damage
-        game_state.attempt_upgrade(wall_locations)
+        game_state.attempt_upgrade(special_wall_locations)
 
     def build_reactive_defense(self, game_state):
         """
