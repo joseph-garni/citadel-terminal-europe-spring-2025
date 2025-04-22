@@ -96,6 +96,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.interceptors_funnel_strategy(game_state)
             
                 #game_state.attempt_spawn(SCOUT, best_location, 1000)
+        #elif game_state.turn_number % 4 == 1:
+            #self.scouts_funnel_strategy(game_state)
 
             # Lastly, if we have spare SP, let's build some supports
         support_locations = [[20, 12], [20, 11], [20, 10], [20, 9], [16, 12], [16, 11], [11, 12], [11, 11], [8, 9], [15, 7], [18, 7], [12, 9], [11, 9], [10, 9], [9, 11]]
@@ -105,7 +107,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         support_locations_3 = [[14, 3],[15, 4], [16, 5], [13, 3], [12, 4], [11, 5], [10, 6], [9, 7], [8, 8], [7, 9], [6, 10], [5, 11], [4, 13], [8, 13], [21, 10], [22, 11]]
         game_state.attempt_spawn(WALL, support_locations_3, 10)
         self.scouts_funnel_strategy(game_state)
-
         # If the turn is less than 5, stall with interceptors and wait to see enemy's base
             # Now let's analyze the enemy base to see where their defenses are concentrated.
             # If they have many units in the front we can build a line for our demolishers to attack them at long range.
