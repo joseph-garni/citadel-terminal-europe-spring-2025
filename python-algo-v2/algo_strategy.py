@@ -54,6 +54,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         game_state = gamelib.GameState(self.config, turn_state)
         game_state.attempt_spawn(INTERCEPTOR, [24, 10], 2) 
+        game_state.attempt_spawn(INTERCEPTOR, [3, 10], 2) 
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(False)  #Comment or remove this line to enable warnings.
         self.starter_strategy(game_state)
@@ -80,29 +81,30 @@ class AlgoStrategy(gamelib.AlgoCore):
 
             # Now let's analyze the enemy base to see where their defenses are concentrated.
             # If they have many units in the front we can build a line for our demolishers to attack them at long range.
-        if self.detect_enemy_unit(game_state, unit_type=None, valid_x=None, valid_y=[14, 15]) > 10:
-            self.scouts_funnel_strategy(game_state)
-        else:
+            #if self.detect_enemy_unit(game_state, unit_type=None, valid_x=None, valid_y=[14, 15]) > 10:
+            #self.scouts_funnel_strategy(game_state)
+            #else:
             # They don't have many units in the front so lets figure out their least defended area and send Scouts there.
 
             # Only spawn Scouts every other turn
             # Sending more at once is better since attacks can only hit a single scout at a time
-            if game_state.turn_number % 2 == 1:
+        if game_state.turn_number % 2 == 1:
                 # To simplify we will just check sending them from back left and right
                 #scout_spawn_location_options = [[13, 0], [14, 0]]
                 #best_location = self.least_damage_spawn_location(game_state, scout_spawn_location_options)
 
-                self.scouts_funnel_strategy(game_state)
+            self.interceptors_funnel_strategy(game_state)
+            
                 #game_state.attempt_spawn(SCOUT, best_location, 1000)
 
             # Lastly, if we have spare SP, let's build some supports
-            support_locations = [[20, 12], [20, 11], [20, 10], [20, 9], [16, 12], [16, 11], [11, 12], [11, 11], [15, 7], [18, 7], [12, 9], [11, 9], [10, 9], [9, 11]]
-            game_state.attempt_spawn(TURRET, support_locations, 2)
-            support_locations_2 = [[19, 12],[19, 11], [19, 10], [19, 9], [21, 13], [20, 13], [19, 13], [19, 8], [18, 8], [17, 8], [16, 8], [15, 8], [6, 13], [7, 13]]
-            game_state.attempt_spawn(WALL, support_locations_2, 5)
-                
-
-
+        support_locations = [[20, 12], [20, 11], [20, 10], [20, 9], [16, 12], [16, 11], [11, 12], [11, 11], [8, 9], [15, 7], [18, 7], [12, 9], [11, 9], [10, 9], [9, 11]]
+        game_state.attempt_spawn(TURRET, support_locations, 2)
+        support_locations_2 = [[19, 12],[19, 11], [17, 6], [19, 10], [19, 9], [21, 13], [20, 13], [19, 13], [19, 8], [18, 8], [17, 8], [16, 8], [15, 8], [6, 13], [7, 13]]
+        game_state.attempt_spawn(WALL, support_locations_2, 6)
+        support_locations_3 = [[14, 3],[15, 4], [16, 5], [13, 3], [12, 4], [11, 5], [10, 6], [9, 7], [8, 8], [7, 9], [6, 10], [5, 11], [4, 13], [8, 13], [21, 10], [22, 11]]
+        game_state.attempt_spawn(WALL, support_locations_3, 6)
+        #self.scouts_funnel_strategy(game_state)
 
         # If the turn is less than 5, stall with interceptors and wait to see enemy's base
             # Now let's analyze the enemy base to see where their defenses are concentrated.
@@ -134,8 +136,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # Place turrets that attack enemy units
         turret_locations = [
-            [1, 12], [3, 12], [6, 12],
-            [23, 12], [23, 11],
+            #[1, 12]
+            [3, 12], [6, 12], [2, 12],
+            [23, 12], [23, 11], [24, 12],
             [17, 12], [17, 11],
             ]
         # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
@@ -143,11 +146,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         
         # Place walls in front of turrets to soak up damage for them
         wall_locations = [
-            [0, 13], [1, 13], [2, 13], [3, 13], [4, 13],[5, 13], [6, 13], 
+            [0, 13], [1, 13], 
+            [2, 13], [3, 13], [4, 13],[5, 13], [6, 13], 
             [4, 12], [5, 12], [7, 12], [8, 11], [16, 10],
             [8, 10], [9, 10], [10, 10], [11, 10], [12, 10], [13, 10], [14, 10], [15, 10], 
             [22, 13], [23, 13],
-            [25, 13], [26, 13], [27, 13], 
+            [25, 13],
+            #[26, 13], [27, 13], 
             [24, 13]]
         game_state.attempt_spawn(WALL, wall_locations)
         # upgrade walls so they soak more damage
@@ -188,6 +193,33 @@ class AlgoStrategy(gamelib.AlgoCore):
             units can occupy the same space.
             """
 
+    def interceptors_funnel_strategy(self, game_state):
+        """
+        Using the funnel strategy from our turrets and walls we have placed earlier, 
+        now spawn 5 - 10+ scounts (when points all it possible), to score on 
+        enemy side using funnel
+        """
+        # Check if we have enough MP to spawn at least 5 scouts
+        scout_cost = gamelib.GameUnit(INTERCEPTOR, game_state.config).cost[MP]
+        available_mp = game_state.get_resource(MP)
+        
+        # Calculate how many scouts we can afford, up to 10
+        max_scouts = min(int(available_mp / scout_cost), 10)
+        
+        # Only proceed if we can afford at least 5 scouts
+        if max_scouts < 1:
+            return False
+        
+        # Choose the best spawn location
+        scout_spawn_location_options = [[13, 0], [14, 0]]
+        best_location = self.least_damage_spawn_location(game_state, scout_spawn_location_options)
+        
+        # Spawn the scouts
+        scouts_spawned = game_state.attempt_spawn(INTERCEPTOR, best_location, max_scouts)
+        
+        return scouts_spawned > 0
+
+    '''
     def scouts_funnel_strategy(self, game_state):
         """
         Using the funnel strategy from our turrets and walls we have placed earlier, 
@@ -213,6 +245,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         scouts_spawned = game_state.attempt_spawn(SCOUT, best_location, max_scouts)
         
         return scouts_spawned > 0
+    '''
 
     # removing demolisher line strategy -> spawning walls in locations it should not be
     '''
