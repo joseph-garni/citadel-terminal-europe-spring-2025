@@ -51,17 +51,18 @@ class AlgoStrategy(gamelib.AlgoCore):
         # Initialize default wall locations - customize this for your strategy
         self.start_wall_locations = [[3,12], [24,12], [4,11], [23,11], [5,10], [22,10], [6,9], [21,9],
                                      [7,8], [20,8], [8,7], [19,7], [9,6], [18,6], [10,5], [17,5], 
-                                     [11,4], [16,4], [11,3], [16,3]]
+                                     [11,4], [16,4], [11,3], [16,3], [15,3]]
         self.corner_walls = [[0,13], [27,13], [1,13], [26,13], [2,13], [25,13], [3,13], [24,13], [4,12], [23,12]]
-        self.corner_turrets = [[0,13], [27,13], [1,13], [26,13], [2,13], [25,13], [3,13], [24,13]]
-        self.start_turret_locations = [[0,13], [27,13], [1,13], [26,13], [2,13], [25,13], [3,13], [13,6],[14,5],[14,4], [24,13]]
+        self.corner_turrets = [[0,13], [27,13], [1,12], [26,12], [2,12], [25,12], [3,13], [24,13]]
+        self.start_turret_locations = [[0,13], [27,13], [1,12], [26,12], [2,12], [25,12], [3,13], [13,6],[14,5],[14,4], [24,13]]
         self.second_turret_locations = [[14,3], [15,6]]
         self.corner_attack_wall_locations = [[12,3], [13,2], [14,1]]
         self.corner2_attack_wall_locations = [[15,3], [14,2], [13,1]]
-        self.support_locations = [[4,12], [5,11], [6,10], [7,9], [8,8], [9,7]]
+        self.support_locations = [[13,3], [11,5], [10,6], [8,8], [9,7], [7,9]]
         self.interceptor_wall_locations = [[7,7], [20,7]]
         # self.priority_upgrade_locations = [[0,13], [27,13], [26,13], [1,13], [2,13], [25,13]]
         self.rndm = None
+        self.ehealth = [30]
     
     def on_turn(self, turn_state):
         """
@@ -84,8 +85,16 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write(f"Low health walls: {self.low_health_walls}")
         
         # Run our improved strategy
-        self.support_strategy(game_state)
-
+        if game_state.turn_number <= 6:
+            self.support_strategy(game_state)
+            self.ehealth.append(game_state.enemy_health)
+        else:
+            last_six_health = self.ehealth[-6:]
+            if len(set(last_six_health)) == 1:  # All values are the same
+                # Switch to strategy 2
+                self.support_strategy_2(game_state)
+            else:
+                self.support_strategy(game_state)
         game_state.submit_turn()
     
     def support_strategy(self, game_state):
@@ -95,10 +104,29 @@ class AlgoStrategy(gamelib.AlgoCore):
         if game_state.turn_number >= 2:
             if (game_state.turn_number + 2)%3 == 1:
                 self.repair_walls(game_state)
-                game_state.attempt_remove([[0,13], [1,13], [11,3]])
+                game_state.attempt_remove([[1,12], [2,12], [11,3], [1,13], [2,13]])
             if (game_state.turn_number +2)%3 == 2:
+                self.repair(game_state)
                 game_state.attempt_spawn(WALL, self.corner_attack_wall_locations)
-                game_state.attempt_spawn(INTERCEPTOR, [3,10], num = 4)
+                game_state.attempt_spawn(INTERCEPTOR, [3,10], num = 5)
+                game_state.attempt_remove(self.corner_attack_wall_locations)
+                while game_state.get_resource(MP) >= game_state.type_cost(SCOUT)[MP]:
+                    game_state.attempt_spawn(SCOUT, [14,0])
+            else:
+                self.repair_walls(game_state)
+    def support_strategy_2(self, game_state):
+        if game_state.turn_number==0 or game_state.turn_number ==1:
+            self.build_defences(game_state)
+        
+        if game_state.turn_number >= 2:
+            if (game_state.turn_number + 2)%3 == 1:
+                self.repair_walls(game_state)
+                game_state.attempt_remove([[1,12], [2,12], [11,3], [1,13], [2,13]])
+            if (game_state.turn_number +2)%3 == 2:
+                self.repair(game_state)
+                game_state.attempt_spawn(WALL, self.corner_attack_wall_locations)
+                game_state.attempt_spawn(SCOUT, [3,10], num = 5)
+                game_state.attempt_remove(self.corner_attack_wall_locations)
                 while game_state.get_resource(MP) >= game_state.type_cost(SCOUT)[MP]:
                     game_state.attempt_spawn(SCOUT, [14,0])
             else:
@@ -164,8 +192,6 @@ class AlgoStrategy(gamelib.AlgoCore):
             if game_state.can_spawn(TURRET, location):
                 game_state.attempt_spawn(TURRET, location)
                 # game_state.attempt_upgrade(location)
-            else:
-                game_state.attempt_upgrade(location)
 
         # for location in self.corner_turrets:
            # if game_state.can_spawn(TURRET, location):
@@ -188,19 +214,15 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_upgrade(location)
             
     
-    def repair(self, game_state, rndm):
-        if rndm == 1:
-            for location in [[0,13], [27,13], [26,13], [2,13], [25,13], [3,13], [24,13],
-                                     [4,12], [23,12], [5,11], [22,11], [6,10], [21,10], [7,9], [20,9],
-                                     [8,8], [19,8], [9,7], [18,7], [10,6], [17,6], [11,5], [16,5], [13,7], [14,7]]:
-                if game_state.can_spawn(WALL, location):
-                    game_state.attempt_spawn(WALL, location)
-        else:
-            for location in [[0,13], [27,13], [1,13], [2,13], [25,13], [3,13], [24,13],
-                                     [4,12], [23,12], [5,11], [22,11], [6,10], [21,10], [7,9], [20,9],
-                                     [8,8], [19,8], [9,7], [18,7], [10,6], [17,6], [11,5], [16,5], [13,7], [14,7]]:
-                if game_state.can_spawn(WALL, location):
-                    game_state.attempt_spawn(WALL, location)
+    def repair(self, game_state):
+    
+        for location in [[3,12], [4,11], [5,10], [6,9], [7,8], [8,7],[9,6], [10,5], [11,4]]:
+            if game_state.can_spawn(WALL, location):
+                game_state.attempt_spawn(WALL, location)
+        
+        for location in [[2,13], [3,13]]:
+            if game_state.can_spawn(TURRET, location):
+                game_state.attempt_spawn(TURRET, location)
         
                 
                 
