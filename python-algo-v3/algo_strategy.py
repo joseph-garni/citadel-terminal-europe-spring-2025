@@ -95,7 +95,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         elif game_state.turn_number == 1: 
             game_state.attempt_spawn(INTERCEPTOR, [5, 8], 1) 
-            game_state.attempt_spawn(INTERCEPTOR, [22, 8], 1) 
+            game_state.attempt_spawn(INTERCEPTOR, [6, 8], 1) 
 
         elif game_state.turn_number == 2: 
             self.build_defences(game_state)
@@ -108,8 +108,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.scouts_funnel_strategy_2(game_state)
         
         elif game_state.turn_number > 3:
-            game_state.attempt_spawn(INTERCEPTOR, [3, 10], 2) 
-            game_state.attempt_spawn(DEMOLISHER, [2, 11], 2) 
+            game_state.attempt_spawn(INTERCEPTOR, [3, 10], 1) 
+            game_state.attempt_spawn(DEMOLISHER, [2, 11], 1) 
             self.scouts_funnel_strategy_2(game_state)
 
         
