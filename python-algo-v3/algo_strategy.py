@@ -91,7 +91,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         if game_state.turn_number == 0:
             self.build_defences(game_state)
             game_state.attempt_spawn(INTERCEPTOR, [5, 8], 1) 
-            game_state.attempt_spawn(INTERCEPTOR, [22, 8], 1) 
+            game_state.attempt_spawn(INTERCEPTOR, [20, 6], 1) 
             game_state.attempt_spawn(SCOUT, [13, 0], 3) 
 
         elif game_state.turn_number == 1: 
