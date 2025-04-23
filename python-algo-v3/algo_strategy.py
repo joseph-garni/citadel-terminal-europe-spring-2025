@@ -199,7 +199,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             [24, 10], [23, 9], [22, 8],
             [21, 8], [20, 8], [19, 8], [18, 8], [17, 8], [16, 8], [15, 8], 
             [14, 8], [13, 8], [12, 8], [11, 8], [10, 8],
-            [9,9], [8, 10], [7, 11], [7, 12], [6, 13], [5, 13], [5, 9]
+            [9,9], [8, 10], [7, 11], [7, 12], [5, 13], [5, 9]
             ]
         game_state.attempt_spawn(WALL, wall_locations)
         # upgrade walls so they soak more damage
