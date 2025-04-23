@@ -51,7 +51,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         # Initialize default wall locations - customize this for your strategy
         self.start_wall_locations = [[3,12], [24,12], [4,11], [23,11], [5,10], [22,10], [6,9], [21,9],
                                      [7,8], [20,8], [8,7], [19,7], [9,6], [18,6], [10,5], [17,5], 
-                                     [11,4], [16,4], [11,3], [16,3], [15,3]]
+                                     [11,4], [16,4], [12,3], [16,3], [15,3]]
         self.corner_walls = [[0,13], [27,13], [1,13], [26,13], [2,13], [25,13], [3,13], [24,13], [4,12], [23,12]]
         self.corner_turrets = [[0,13], [27,13], [1,12], [26,12], [2,12], [25,12], [3,13], [24,13]]
         self.start_turret_locations = [[0,13], [27,13], [1,12], [26,12], [2,12], [25,12], [3,13], [13,6],[14,5],[14,4], [24,13]]
@@ -77,8 +77,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.suppress_warnings(True)  # Comment or remove this line to enable warnings.
 
         # Update our tracking variables at the beginning of each turn
-        self.wall_locations = self.get_wall_locations(game_state)
-        self.find_low_health_walls(game_state, 0.4)  # Find walls below 40% health
         
         # Print debug information
         gamelib.debug_write(f"Wall breaches from last turn: {self.wall_breaches}")
@@ -89,8 +87,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.support_strategy(game_state)
             self.ehealth.append(game_state.enemy_health)
         else:
-            last_six_health = self.ehealth[-6:]
-            if len(set(last_six_health)) == 1:  # All values are the same
+            last_six_health = self.ehealth[-5:]
+            delta = max(last_six_health) - min(last_six_health)
+            if delta <= 4:  # All values are the same
                 # Switch to strategy 2
                 self.support_strategy_2(game_state)
             else:
@@ -131,58 +130,6 @@ class AlgoStrategy(gamelib.AlgoCore):
                     game_state.attempt_spawn(SCOUT, [14,0])
             else:
                 self.repair_walls(game_state)
-
-    def get_wall_locations(self, game_state):
-        """
-        Get all locations where we have walls
-        
-        Args:
-            game_state: The current game state
-            
-        Returns:
-            A list of locations where we have walls
-        """
-        wall_locations = []
-        
-        for x in range(game_state.ARENA_SIZE):
-            for y in range(game_state.HALF_ARENA):  # Only check our side of the map
-                location = [x, y]
-                if game_state.contains_stationary_unit(location):
-                    unit = game_state.contains_stationary_unit(location)
-                    if unit.unit_type == WALL and unit.player_index == 0:  # It's our wall
-                        wall_locations.append(location)
-        
-        return wall_locations
-
-    def find_low_health_walls(self, game_state, health_threshold=0.4):
-        """
-        Find walls with health below the given threshold (default 40%)
-        
-        Args:
-            game_state: The current game state
-            health_threshold: The health threshold as a decimal (0.4 = 40%)
-            
-        Returns:
-            A list of locations of walls with health below the threshold
-        """
-        self.low_health_walls = []
-        
-        # Get all locations with walls
-        for x in range(game_state.ARENA_SIZE):
-            for y in range(game_state.HALF_ARENA):  # Only check our side of the map
-                location = [x, y]
-                if game_state.contains_stationary_unit(location):
-                    unit = game_state.contains_stationary_unit(location)
-                    if unit.unit_type == WALL and unit.player_index == 0:  # It's our wall
-                        # Get the maximum health of a wall
-                        max_health = gamelib.GameUnit(WALL, game_state.config).max_health
-                        
-                        # Check if health is below threshold
-                        if unit.health / max_health < health_threshold:
-                            self.low_health_walls.append(location)
-                            gamelib.debug_write(f"Low health wall at {location} with {unit.health}/{max_health} health")
-        
-        return self.low_health_walls
 
     def repair_walls(self, game_state):
         """
