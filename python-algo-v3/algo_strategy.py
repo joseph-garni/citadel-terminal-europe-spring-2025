@@ -184,15 +184,15 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # Place turrets that attack enemy units
         turret_locations = [
-            [0, 13], [1, 13], [2, 13], [3, 12], [4, 11], [5, 11], [7, 10], [26, 12]
-            [26, 12], [25, 11], [24, 10], [20, 10], [3, 13], [4, 13]]
+            [0, 13], [1, 13], [2, 13], [3, 12], [4, 11], [5, 11], [7, 10], [26, 12],
+            [26, 12], [25, 11], [24, 10], [20, 10], [3, 13], [4, 13], [25, 12]]
         # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
         game_state.attempt_spawn(TURRET, turret_locations)
         
         # Place walls in front of turrets to soak up damage for them
         wall_locations = [
             [27, 13], [25, 11], 
-            [24, 10], [23, 9], [22, 8]
+            [24, 10], [23, 9], [22, 8],
             [21, 8], [20, 8], [19, 8], [18, 8], [17, 8], [16, 8], [15, 8], 
             [14, 8], [13, 8], [12, 8], [11, 8], [10, 8],
             [9,9], [8, 10], [7, 11], [7, 12], [6, 13], [5, 13], [5, 9]
