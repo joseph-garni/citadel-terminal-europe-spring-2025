@@ -49,15 +49,16 @@ class AlgoStrategy(gamelib.AlgoCore):
         SP = 0
         
         # Initialize default wall locations - customize this for your strategy
-        self.default_wall_locations = [[0,13], [1,13], [2,13], [25,13], [26,13], [27,13],
-                                       [3,12], [24,12], [4,11], [23,11], [5,10], [22,10], 
-                                       [6,9], [21,9], [7,8], [20,8], [8,7], [19,7], 
-                                       [9,6], [18,6], [10,5], [17,5],[11,4], [16,4],
-                                       [12,3], [15,3]]
-        self.default_turret_locations = [[13,7], [14,7], [1,12], [26,12], [13,6], [14,6]]
-        self.corner_attack_wall_locations = [[13,3], [14,3]]
-        self.interceptor_wall_locations = [[8,6], [19,6], [13,2], [14,2]]
-        self.priority_upgrade_locations = [[0,13], [27,13], [26,13], [1,13], [2,13], [25,13]]
+        self.start_wall_locations = [[0,13], [27,13], [1,13], [26,13], [2,13], [25,13], [3,13], [24,13],
+                                     [4,12], [23,12], [5,11], [22,11], [6,10], [21,10], [7,9], [20,9],
+                                     [8,8], [19,8], [9,7], [18,7], [10,6], [17,6], [11,5], [16,5], [13,7], [14,7]]
+        self.corner_walls = [[0,13], [27,13], [1,13], [26,13], [2,13], [25,13], [3,13], [24,13], [4,12], [23,12]]
+        self.corner_turrets = [[1,12], [26,12], [3,12], [24,12]]
+        self.start_turret_locations = [[1,12], [26,12], [3,12], [24,12], [13,6], [14,6]]
+        self.second_turret_locations = [[12,7], [15,7]]
+        self.corner_attack_wall_locations = [[12,5], [15,5]]
+        self.interceptor_wall_locations = [[7,7], [20,7]]
+        # self.priority_upgrade_locations = [[0,13], [27,13], [26,13], [1,13], [2,13], [25,13]]
         self.rndm = None
     
     def on_turn(self, turn_state):
@@ -81,7 +82,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write(f"Low health walls: {self.low_health_walls}")
         
         # Run our improved strategy
-        self.funnel_strategy(game_state)
+        self.spam_strategy(game_state)
 
         game_state.submit_turn()
 
@@ -141,36 +142,80 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         Repair damaged walls and replace breached walls
         """
-        for location in self.default_wall_locations:
+        for location in self.corner_walls:
             if game_state.can_spawn(WALL, location):
                 game_state.attempt_spawn(WALL, location)
+                game_state.attempt_upgrade(location)
             else:
                 game_state.attempt_upgrade(location)
 
-        for location in self.default_turret_locations:
-            if game_state.can_spawn(WALL, location):
+        for location in self.corner_turrets:
+            if game_state.can_spawn(TURRET, location):
                 game_state.attempt_spawn(TURRET, location)
             else:
                 game_state.attempt_upgrade(location)
-
+        for location in self.start_wall_locations:
+            if game_state.can_spawn(WALL, location):
+                game_state.attempt_spawn(WALL, location)
+        for location in [[13,8], [14,8], [13,7], [14,7]]:
+            if game_state.can_spawn(WALL, location):
+                game_state.attempt_spawn(WALL, location)
+                game_state.attempt_upgrade(location)
+            else:
+                game_state.attempt_upgrade(location)
+        for location in self.start_turret_locations:
+            if game_state.can_spawn(TURRET, location):
+                game_state.attempt_spawn(TURRET, location)
+            else:
+                game_state.attempt_upgrade(location)
+        for location in [[13,0], [14,0], [13,1], [14,1]]:
+            if game_state.attempt_spawn(SUPPORT, location):
+                game_state.attempt_spawn(SUPPORT, location)
+            else:
+                game_state.attempt_upgrade(location)
+        for location in self.second_turret_locations:
+            if game_state.attempt_spawn(TURRET, location):
+                game_state.attempt_spawn(TURRET, location)
+            else:
+                game_state.attempt_upgrade(location)
+    
+    def repair(self, game_state, rndm):
+        if rndm == 1:
+            for location in [[0,13], [27,13], [26,13], [2,13], [25,13], [3,13], [24,13],
+                                     [4,12], [23,12], [5,11], [22,11], [6,10], [21,10], [7,9], [20,9],
+                                     [8,8], [19,8], [9,7], [18,7], [10,6], [17,6], [11,5], [16,5], [13,7], [14,7]]:
+                if game_state.can_spawn(WALL, location):
+                    game_state.attempt_spawn(WALL, location)
+                else:
+                    game_state.attempt_upgrade(location)
+        else:
+            for location in [[0,13], [27,13], [1,13], [2,13], [25,13], [3,13], [24,13],
+                                     [4,12], [23,12], [5,11], [22,11], [6,10], [21,10], [7,9], [20,9],
+                                     [8,8], [19,8], [9,7], [18,7], [10,6], [17,6], [11,5], [16,5], [13,7], [14,7]]:
+                if game_state.can_spawn(WALL, location):
+                    game_state.attempt_spawn(WALL, location)
+                else:
+                    game_state.attempt_upgrade(location)
+                
+                
     
     def build_defences(self, game_state):
         """
         Build basic defenses using hardcoded locations.
         Remember to defend corners and avoid placing units in the front where enemy demolishers can attack them.
         """
-        for location in self.default_wall_locations:
+        for location in self.start_wall_locations:
             game_state.attempt_spawn(WALL, location)
         # Place turrets that attack enemy units
         # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
-        game_state.attempt_spawn(TURRET, self.default_turret_locations)
+        game_state.attempt_spawn(TURRET, self.start_turret_locations)
         
         # Place walls in front of turrets to soak up damage for them
 
             
         # Place supports behind turrets
-        support_locations = [[13,0],[14,0]]
-        game_state.attempt_spawn(SUPPORT, support_locations)
+        # support_locations = [[13,0],[14,0]]
+        # game_state.attempt_spawn(SUPPORT, support_locations)
         
         # Upgrade walls so they soak more damage
         # Prioritize upgrading walls that are frequently breached
@@ -180,15 +225,16 @@ class AlgoStrategy(gamelib.AlgoCore):
             if wall_loc in self.wall_locations and wall_loc not in self.priority_upgrade_locations:
                 self.priority_upgrade_locations.append(wall_loc)
         """
-        game_state.attempt_upgrade(self.priority_upgrade_locations)
-        game_state.attempt_upgrade(self.default_turret_locations)
+        game_state.attempt_upgrade(self.corner_walls)
+        game_state.attempt_upgrade(self.corner_turrets)
+        # game_state.attempt_upgrade(self.default_turret_locations)
         
         # Then upgrade the rest of the walls if we have spare SP (COMMENTED OUT FOR THIS VERISON OF FUNNEL STRAT)
         # other_walls = [loc for loc in self.wall_locations if loc not in priority_upgrade_locations]
         # game_state.attempt_upgrade(other_walls)
         
         # Upgrade turrets
-        game_state.attempt_upgrade(self.default_turret_locations)
+        # game_state.attempt_upgrade(self.default_turret_locations)
 
     """ 
     def build_reactive_defense(self, game_state):
@@ -262,36 +308,39 @@ class AlgoStrategy(gamelib.AlgoCore):
             """
     
     def interceptor_defence(self, game_state):
-        spawn_int_loc = [[6,7],[21,7]]
+        spawn_int_loc = [[6,7], [21,7]]
         game_state.attempt_spawn(WALL, self.interceptor_wall_locations)
         game_state.attempt_spawn(INTERCEPTOR,spawn_int_loc)
+        game_state.attempt_spawn(WALL, self.corner_attack_wall_locations)
+        game_state.attempt_remove(self.interceptor_wall_locations)
 
     def corner_attack(self, game_state):
+        game_state.attempt_spawn(WALL, [[3,13]])
         game_state.attempt_spawn(WALL, self.corner_attack_wall_locations)
         game_state.attempt_remove(self.corner_attack_wall_locations)
-        game_state.attempt_spawn(INTERCEPTOR, [[3,10],[3,10],[3,10],[3,10]])
+        game_state.attempt_spawn(INTERCEPTOR, [[4,9],[4,9],[4,9]])
         # game_state.attempt_spawn(WALL,[[21,8]])
         while game_state.get_resource(MP) >= game_state.type_cost(SCOUT)[MP]:
-            game_state.attempt_spawn(SCOUT, [[18,4]])
+            game_state.attempt_spawn(SCOUT, [[22,8]])
     
     def corner2_attack(self, game_state):
+        game_state.attempt_spawn(WALL, [[24,13]])
         game_state.attempt_spawn(WALL, self.corner_attack_wall_locations)
         game_state.attempt_remove(self.corner_attack_wall_locations)
-        game_state.attempt_spawn(INTERCEPTOR, [[24,10],[24,10],[24,10], [24,10]])
+        game_state.attempt_spawn(INTERCEPTOR, [[23,9],[23,9],[23,9]])
         # game_state.attempt_spawn(WALL,[[6,8]])
         while game_state.get_resource(MP) >= game_state.type_cost(SCOUT)[MP]:
-            game_state.attempt_spawn(SCOUT, [[9,4]])
+            game_state.attempt_spawn(SCOUT, [[5,8]])
 
 
     def funnel_strategy(self, game_state):
         if game_state.turn_number==0 or game_state.turn_number == 1:
             self.build_defences(game_state)
             game_state.attempt_spawn(SCOUT, [16,2], num = 5)
-        if game_state.turn_number==2:
-            game_state.attempt_spawn(WALL, [[13,8], [14,8]])
-            self.default_wall_locations.extend([[13,8],[14,8]])
-            game_state.attempt_spawn(INTERCEPTOR, [[10,3],[17,3]], num=2)
-        if game_state.turn_number >= 3:
+        # if game_state.turn_number==2:
+            # game_state.attempt_spawn(WALL, [[13,8], [14,8]])
+            # game_state.attempt_spawn(INTERCEPTOR, [[10,3],[17,3]], num=2)
+        if game_state.turn_number >= 2:
             if (game_state.turn_number + 1)%3 == 1:
                 self.repair_walls(game_state)
                 self.interceptor_defence(game_state)
@@ -300,17 +349,39 @@ class AlgoStrategy(gamelib.AlgoCore):
                 self.repair_walls(game_state)
                 game_state.attempt_remove(self.interceptor_wall_locations)
                 if self.rndm == 1:
-                    game_state.attempt_remove([[0,13], [1,13]])
+                    game_state.attempt_remove([[1,13]])
                     game_state.attempt_remove([[1,12]])
                 else:
-                    game_state.attempt_remove([[26,13],[27,13]])
+                    game_state.attempt_remove([[26,13]])
                     game_state.attempt_remove([[26,12]])
+                game_state.attempt_spawn(INTERCEPTOR, [[10,3], [17,3]])
             elif (game_state.turn_number + 1)%3 == 0:
                 if self.rndm == 1:
                     self.corner_attack(game_state)
                 else:
                     self.corner2_attack(game_state)
 
+    def spam_strategy(self, game_state):
+        if game_state.turn_number == 0 or game_state.turn_number == 1:
+            self.build_defences(game_state)
+            game_state.attempt_spawn(SCOUT, [16,2], num = 5)
+        if game_state.turn_number >= 2:
+            if (game_state.turn_number)%2 == 0:
+                self.rndm = random.randint(1,2)
+                self.repair_walls(game_state)
+                if self.rndm == 1:
+                    game_state.attempt_remove([[1,13]])
+                    game_state.attempt_remove([[1,12]])
+                else:
+                    game_state.attempt_remove([[26,13]])
+                    game_state.attempt_remove([[26,12]])
+                game_state.attempt_spawn(INTERCEPTOR, [[10,3], [17,3]])
+            if game_state.turn_number%2 == 1:
+                self.repair(game_state, self.rndm)
+                if self.rndm == 1:
+                    self.corner_attack(game_state)
+                else:
+                    self.corner2_attack(game_state)
 
     def demolisher_line_strategy(self, game_state):
         """
