@@ -89,11 +89,13 @@ class AlgoStrategy(gamelib.AlgoCore):
             # Sending more at once is better since attacks can only hit a single scout at a time
 
         if game_state.turn_number == 0:
+            self.build_defences(game_state)
             game_state.attempt_spawn(INTERCEPTOR, [5, 8], 1) 
             game_state.attempt_spawn(INTERCEPTOR, [22, 8], 1) 
             game_state.attempt_spawn(SCOUT, [13, 0], 3) 
 
         elif game_state.turn_number == 1: 
+            self.build_defences(game_state)
             game_state.attempt_spawn(INTERCEPTOR, [5, 8], 1) 
             game_state.attempt_spawn(INTERCEPTOR, [6, 8], 1) 
 
@@ -104,10 +106,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state.attempt_spawn(DEMOLISHER, [2, 11], 2) 
         
         elif game_state.turn_number == 3:
+            self.build_defences(game_state)
             game_state.attempt_spawn(INTERCEPTOR, [3, 10], 2) 
             self.scouts_funnel_strategy_2(game_state)
         
         elif game_state.turn_number > 3:
+            self.build_defences(game_state)
             game_state.attempt_spawn(INTERCEPTOR, [3, 10], 1) 
             game_state.attempt_spawn(DEMOLISHER, [2, 11], 1) 
             self.scouts_funnel_strategy_2(game_state)
